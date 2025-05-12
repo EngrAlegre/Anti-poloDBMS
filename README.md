@@ -2,7 +2,7 @@
 
 A desktop application designed to help students easily find and connect with faculty members at the university. Built with PyQt5 and SQLite.
 
-![Faculty Finder](https://via.placeholder.com/800x450.png?text=Faculty+Finder+Application)
+![Faculty Finder](https://jumpshare.com/s/xmUk39X92bUdfDQk02Nd)
 
 ## Features
 

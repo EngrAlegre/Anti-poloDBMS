@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import (QWidget, QLabel, QFrame, QVBoxLayout, QHBoxLayout,
                            QPushButton, QLineEdit, QMessageBox, QTableWidget, 
                            QTableWidgetItem, QHeaderView, QSpacerItem, QSizePolicy,
-                           QGridLayout, QComboBox, QTimeEdit)
+                           QGridLayout, QComboBox, QTimeEdit, QDialog)
 from PyQt5.QtCore import Qt, QTime
 from PyQt5.QtGui import QFont
 import sqlite3

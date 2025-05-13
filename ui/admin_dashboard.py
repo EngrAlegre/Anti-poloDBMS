@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import (QWidget, QLabel, QFrame, QVBoxLayout, QHBoxLayout,
                            QScrollArea, QGridLayout, QPushButton, QSizePolicy, QMessageBox)
 from PyQt5.QtCore import Qt, pyqtSignal, QSize
 from PyQt5.QtGui import QFont, QCursor
-from database import get_all_professors, get_all_departments, get_all_faculties, get_all_courses
+from database import get_all_professors, get_all_departments, get_all_faculties, get_all_courses, get_all_schedules
 
 class StatCard(QFrame):
     def __init__(self, title, parent=None):
@@ -219,14 +219,13 @@ class AdminDashboardFrame(QWidget):
         professors = get_all_professors()
         departments = get_all_departments()
         courses = get_all_courses()
+        schedules = get_all_schedules()
         
         # Update statistics
         self.faculty_card.update_count(len(professors))
         self.dept_card.update_count(len(departments))
         self.course_card.update_count(len(courses))
-        
-        # For schedules, we'd need a separate function, but for now let's use a placeholder
-        self.schedule_card.update_count(25)  # Placeholder
+        self.schedule_card.update_count(len(schedules))
     
     def show_faculty_management(self):
         """Show faculty management screen"""
@@ -248,6 +247,10 @@ class AdminDashboardFrame(QWidget):
         """Log out and return to the main application"""
         reply = QMessageBox.question(self, "Logout", "Are you sure you want to log out?", 
                                    QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+                                   
         if reply == QMessageBox.Yes:
-            self.admin_info = None
-            self.controller.admin_logged_out() 
+            self.controller.logout()
+            
+    def on_show(self):
+        """Called when frame is shown - refresh data"""
+        self.refresh_dashboard() 

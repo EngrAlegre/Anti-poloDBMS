@@ -197,8 +197,16 @@ class DepartmentManagementFrame(QWidget):
             for i, dept in enumerate(departments):
                 self.dept_table.setItem(i, 0, QTableWidgetItem(str(dept['office_id'])))
                 self.dept_table.setItem(i, 1, QTableWidgetItem(dept['office_name']))
-                self.dept_table.setItem(i, 2, QTableWidgetItem(dept['building_num']))
-                self.dept_table.setItem(i, 3, QTableWidgetItem(dept['room_num']))
+                
+                # Convert building number to string (handling None values)
+                building_num = dept['building_num']
+                building_str = str(building_num) if building_num is not None else ""
+                self.dept_table.setItem(i, 2, QTableWidgetItem(building_str))
+                
+                # Convert room number to string (handling None values)
+                room_num = dept['room_num']
+                room_str = str(room_num) if room_num is not None else ""
+                self.dept_table.setItem(i, 3, QTableWidgetItem(room_str))
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to load departments: {str(e)}")
     

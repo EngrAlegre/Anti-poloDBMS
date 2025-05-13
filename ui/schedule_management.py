@@ -7,6 +7,7 @@ from PyQt5.QtGui import QFont
 import sqlite3
 from database import (get_all_professors, get_all_courses, get_professor_schedule,
                     add_schedule, update_schedule, delete_schedule, get_all_schedules)
+from ui.add_schedule_dialog import AddScheduleDialog
 
 class ScheduleManagementFrame(QWidget):
     def __init__(self, parent, controller):
@@ -152,9 +153,13 @@ class ScheduleManagementFrame(QWidget):
             self.selected_schedule_id = None
     
     def show_add_dialog(self):
-        """Show a dialog to add a new schedule - placeholder for now"""
-        QMessageBox.information(self, "Add Schedule", 
-                               "This feature will be implemented in a future update.")
+        """Show dialog to add a new schedule"""
+        dialog = AddScheduleDialog(self)
+        result = dialog.exec_()
+        
+        if result == QDialog.Accepted:
+            self.load_schedules()
+            QMessageBox.information(self, "Success", "Schedule added successfully")
     
     def delete_selected_schedule(self):
         """Delete the selected schedule"""

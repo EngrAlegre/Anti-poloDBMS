@@ -1,0 +1,110 @@
+Faculty Management System Database Documentation
+
+DATABASE TYPE AND IMPLEMENTATION
+
+Our Faculty Finder application uses SQLite as its database management system. SQLite is a lightweight, serverless database engine that stores data in a single file, making it ideal for desktop applications like ours. The database file (faculty_db.sqlite) is created and managed directly within the application.
+
+Key advantages of using SQLite for this project:
+- Zero configuration: No separate server setup required
+- File-based: All data is stored in a single file, making it portable
+- Self-contained: The entire database is embedded within our application
+- Cross-platform: Works consistently across different operating systems
+- Efficient: Excellent performance for applications with moderate data volume
+
+DATABASE INTEGRATION
+
+The database integration is handled through the built-in sqlite3 Python module, which provides a Python interface to the SQLite database. We implemented a comprehensive set of functions in database.py that handle all database operations, providing a clean separation between the database logic and the user interface.
+
+Key integration points include:
+1. Database Creation and Initialization:
+   - create_database() function creates the database schema
+   - populate_sample_data() adds initial test data
+   - ensure_photo_url_column() and ensure_admin_table_exists() handle database updates
+
+2. Data Access Layer:
+   - get_all_professors(), get_professor_by_id(), etc. retrieve data
+   - add_professor(), update_professor(), delete_professor() modify data
+   - search and filter functions provide query capabilities
+
+3. Connection Management:
+   - Each database function establishes its own connection
+   - Connections are properly closed after operations complete
+   - Transactions are used for data integrity
+
+The integration follows a repository pattern where the database.py file acts as an abstraction layer, isolating the SQL queries from the rest of the application. This makes it easier to maintain and potentially switch database systems in the future if needed.
+
+ENTITY RELATIONSHIP DIAGRAM (ERD)
+
+Our database consists of the following key entities and relationships:
+
+Entities:
+1. Professors (faculty_id, f_name, l_name, email, office_id, subject_id, photo_url)
+2. Faculty (office_id, office_name, building_num, room_num)
+3. Courses (course_code, course_name)
+4. Professor_Sched (schedule_id, faculty_id, day_of_week, start_time, end_time, room_location, academic_year, semester_num, course_code)
+5. Admin_Users (admin_id, username, password_hash, full_name, email, last_login, is_active)
+
+Relationships:
+- Professors belong to a Faculty (Many-to-One)
+- Professors teach multiple Courses through Professor_Sched (Many-to-Many)
+- Courses are taught by multiple Professors through Professor_Sched (Many-to-Many)
+
+The Professor_Sched table serves as a junction table between Professors and Courses, implementing the many-to-many relationship. It contains additional attributes like schedule time, location, and semester information.
+
+USER INTERFACE IMPLEMENTATION
+
+The user interface is built using PyQt5, a Python binding for the Qt application framework. This provides a modern, cross-platform GUI with rich components and styling capabilities.
+
+Key UI components:
+1. Main Window (FacultyManagementSystem class):
+   - Implements the application's main window and navigation system
+   - Manages multiple frames within a stacked widget for different views
+   - Handles navigation between different screens
+
+2. Frame System:
+   - Each functionality is encapsulated in its own frame class
+   - Frames are loaded and unloaded as needed through the stacked widget
+   - Examples include FacultyListFrame, DepartmentDetailFrame, AdminFrame, etc.
+
+3. UI Components:
+   - Custom styled buttons, cards, and list items
+   - Consistent color scheme with yellow (#FFDD00) accent color
+   - Responsive layout that adjusts based on window size
+
+4. Navigation System:
+   - Side navigation bar with custom NavButton components
+   - Navigation state management to track active sections
+   - Breadcrumb-style back navigation for detail views
+
+The UI implements a responsive design pattern where components adjust to different window sizes through the on_resize() methods. We use a card-based design for displaying faculty and department information, giving the application a modern, material design feel.
+
+MAIN.PY IMPLEMENTATION
+
+The main.py file serves as the entry point and orchestrator for the entire application. It ties together the database and UI components through these main elements:
+
+1. Application Initialization:
+   - Creates the application instance (QApplication)
+   - Initializes or verifies the database
+   - Sets up the main window and UI components
+
+2. Frame Management:
+   - Loads all frame classes (imported from the ui/ directory)
+   - Creates instances of each frame and adds them to the stacked widget
+   - Provides methods for navigating between frames (show_frame)
+
+3. Controller Functions:
+   - Acts as a mediator between frames (e.g., show_faculty_detail)
+   - Manages application state (admin mode, current selections)
+   - Handles events like faculty selection, admin login/logout
+
+4. Database Integration:
+   - Calls database initialization functions
+   - Passes database functions to frames that need them
+   - Ensures the database schema is updated when needed
+
+The main.py file exemplifies the Model-View-Controller (MVC) pattern, where:
+- Model: The database.py functions and data structures
+- View: The various frame classes in the ui/ directory 
+- Controller: The FacultyManagementSystem class in main.py
+
+This architecture provides clean separation of concerns, making the code more maintainable and easier to extend with new features in the future. 

@@ -68,9 +68,9 @@ class FacultyManagementFrame(QWidget):
         form_layout = QGridLayout(form_container)
         
         # Form title
-        form_title = QLabel("Add New Faculty")
-        form_title.setFont(QFont("Arial", 14, QFont.Bold))
-        form_layout.addWidget(form_title, 0, 0, 1, 2)
+        self.form_title = QLabel("Add New Faculty")
+        self.form_title.setFont(QFont("Arial", 14, QFont.Bold))
+        form_layout.addWidget(self.form_title, 0, 0, 1, 2)
         
         # First Name
         form_layout.addWidget(QLabel("First Name:"), 1, 0)
@@ -95,10 +95,16 @@ class FacultyManagementFrame(QWidget):
         # Phone
         form_layout.addWidget(QLabel("Phone:"), 5, 0)
         self.phone_entry = QLineEdit()
+        self.phone_entry.setPlaceholderText("+63 XXX XXX XXXX or 09XX XXX XXXX")
         form_layout.addWidget(self.phone_entry, 5, 1)
         
+        # Specialty
+        form_layout.addWidget(QLabel("Specialty:"), 6, 0)
+        self.specialty_entry = QLineEdit()
+        form_layout.addWidget(self.specialty_entry, 6, 1)
+        
         # Photo
-        form_layout.addWidget(QLabel("Photo:"), 6, 0)
+        form_layout.addWidget(QLabel("Photo:"), 7, 0)
         photo_container = QFrame()
         photo_layout = QHBoxLayout(photo_container)
         photo_layout.setContentsMargins(0, 0, 0, 0)
@@ -121,7 +127,7 @@ class FacultyManagementFrame(QWidget):
         self.photo_label = QLabel("No photo selected")
         photo_layout.addWidget(self.photo_label, 1)
         
-        form_layout.addWidget(photo_container, 6, 1)
+        form_layout.addWidget(photo_container, 7, 1)
         
         # Buttons container
         buttons_container = QFrame()
@@ -166,7 +172,7 @@ class FacultyManagementFrame(QWidget):
         """)
         buttons_layout.addWidget(self.save_btn)
         
-        form_layout.addWidget(buttons_container, 7, 0, 1, 2)
+        form_layout.addWidget(buttons_container, 8, 0, 1, 2)
         
         content_layout.addWidget(form_container)
         
@@ -181,8 +187,8 @@ class FacultyManagementFrame(QWidget):
         
         # Faculty table
         self.faculty_table = QTableWidget()
-        self.faculty_table.setColumnCount(6)
-        self.faculty_table.setHorizontalHeaderLabels(["ID", "First Name", "Last Name", "Department", "Email", "Phone"])
+        self.faculty_table.setColumnCount(7)
+        self.faculty_table.setHorizontalHeaderLabels(["ID", "First Name", "Last Name", "Department", "Email", "Phone", "Specialty"])
         self.faculty_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.faculty_table.setSelectionBehavior(QTableWidget.SelectRows)
         self.faculty_table.setSelectionMode(QTableWidget.SingleSelection)
@@ -240,7 +246,8 @@ class FacultyManagementFrame(QWidget):
                 self.faculty_table.setItem(i, 2, QTableWidgetItem(prof['last_name']))
                 self.faculty_table.setItem(i, 3, QTableWidgetItem(prof['department_name']))
                 self.faculty_table.setItem(i, 4, QTableWidgetItem(prof['email']))
-                self.faculty_table.setItem(i, 5, QTableWidgetItem(prof['subject_id']))  # Using subject_id for phone
+                self.faculty_table.setItem(i, 5, QTableWidgetItem(prof['phone']))
+                self.faculty_table.setItem(i, 6, QTableWidgetItem(prof['subject_id']))
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to load faculty list: {str(e)}")
     
@@ -248,40 +255,51 @@ class FacultyManagementFrame(QWidget):
         """Handle faculty selection from table"""
         selected_rows = self.faculty_table.selectedIndexes()
         if selected_rows:
-            row = selected_rows[0].row()
-            faculty_id = int(self.faculty_table.item(row, 0).text())
-            self.selected_faculty_id = faculty_id
             self.delete_btn.setEnabled(True)
+            row = selected_rows[0].row()
+            self.selected_faculty_id = int(self.faculty_table.item(row, 0).text())
+            self.current_mode = "edit"
             
-            # Load faculty data into form
             try:
-                faculty = get_professor_by_id(faculty_id)
+                # Get faculty details
+                faculty = get_professor_by_id(self.selected_faculty_id)
+                
                 if faculty:
+                    # Update form with faculty data
+                    self.form_title.setText("Edit Faculty")
+                    self.save_btn.setText("Update Faculty")
+                    
                     self.first_name_entry.setText(faculty['first_name'])
                     self.last_name_entry.setText(faculty['last_name'])
                     
-                    index = self.dept_combo.findText(faculty['department_name'])
-                    if index >= 0:
-                        self.dept_combo.setCurrentIndex(index)
+                    # Set department
+                    dept_index = self.dept_combo.findText(faculty['department_name'])
+                    if dept_index >= 0:
+                        self.dept_combo.setCurrentIndex(dept_index)
                     
                     self.email_entry.setText(faculty['email'])
-                    self.phone_entry.setText(faculty['subject_id'])  # Using subject_id for phone
+                    # Get phone from previous load_faculty_list operation
+                    row = selected_rows[0].row()
+                    self.phone_entry.setText(self.faculty_table.item(row, 5).text())
+                    self.specialty_entry.setText(faculty['subject_id'])
                     
                     # Handle photo, if needed in the future
-                    self.photo_path = None
-                    self.photo_label.setText("No photo available")
-                    
-                    # Update UI for edit mode
-                    self.current_mode = "edit"
-                    self.save_btn.setText("Update Faculty")
-                else:
-                    QMessageBox.critical(self, "Error", "Could not find faculty details")
+                    if 'photo_url' in faculty and faculty['photo_url']:
+                        self.photo_path = faculty['photo_url']
+                        self.photo_label.setText(os.path.basename(self.photo_path))
+                    else:
+                        self.photo_path = None
+                        self.photo_label.setText("No photo")
                 
             except Exception as e:
                 QMessageBox.critical(self, "Error", f"Failed to load faculty details: {str(e)}")
         else:
-            self.selected_faculty_id = None
             self.delete_btn.setEnabled(False)
+            self.selected_faculty_id = None
+            self.current_mode = "add"
+            self.form_title.setText("Add New Faculty")
+            self.save_btn.setText("Add Faculty")
+            self.reset_form()
     
     def reset_form(self):
         """Reset the form to add new faculty mode"""
@@ -289,6 +307,7 @@ class FacultyManagementFrame(QWidget):
         self.last_name_entry.clear()
         self.email_entry.clear()
         self.phone_entry.clear()
+        self.specialty_entry.clear()
         if self.dept_combo.count() > 0:
             self.dept_combo.setCurrentIndex(0)
         
@@ -323,6 +342,7 @@ class FacultyManagementFrame(QWidget):
         department = self.dept_combo.currentText()
         email = self.email_entry.text().strip()
         phone = self.phone_entry.text().strip()
+        specialty = self.specialty_entry.text().strip()
         
         if not first_name or not last_name or not department:
             QMessageBox.warning(self, "Validation Error", "First name, last name, and department are required")
@@ -332,7 +352,7 @@ class FacultyManagementFrame(QWidget):
             if self.current_mode == "add":
                 # Add new faculty
                 success, msg = add_professor(
-                    first_name, last_name, email, phone, department, 
+                    first_name, last_name, email, phone, department, specialty, 
                     photo_url=self.photo_path
                 )
                 
@@ -345,7 +365,7 @@ class FacultyManagementFrame(QWidget):
                 # Update existing faculty
                 success, msg = update_professor(
                     self.selected_faculty_id, first_name, last_name, 
-                    email, phone, department, photo_url=self.photo_path
+                    email, phone, department, specialty, photo_url=self.photo_path
                 )
                 
                 if success:

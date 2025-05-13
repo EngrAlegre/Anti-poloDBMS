@@ -70,6 +70,9 @@ def create_database():
     
     conn.commit()
     conn.close()
+    
+    # Ensure photos directory exists
+    ensure_photos_directory_exists()
 
 def populate_sample_data():
     """Populate the database with sample data"""
@@ -156,7 +159,7 @@ def get_all_professors():
     
     cursor.execute('''
     SELECT p.faculty_id, p.f_name as first_name, p.l_name as last_name, p.email, p.subject_id,
-           f.office_name as department_name, f.building_num, f.room_num, '' as phone
+           f.office_name as department_name, f.building_num, f.room_num, p.photo_url
     FROM professors p
     LEFT JOIN faculty f ON p.office_id = f.office_id
     ORDER BY p.l_name, p.f_name
@@ -165,8 +168,25 @@ def get_all_professors():
     rows = cursor.fetchall()
     conn.close()
     
-    # Convert sqlite3.Row objects to dictionaries
-    professors = [dict(row) for row in rows]
+    # Convert sqlite3.Row objects to dictionaries and add phone numbers
+    professors = []
+    phil_prefixes = ["+63", "09"]
+    import random
+    
+    for row in rows:
+        prof_dict = dict(row)
+        # Generate a random Philippine phone number
+        prefix = random.choice(phil_prefixes)
+        if prefix == "+63":
+            # Format: +63 XXX XXX XXXX
+            phone_number = f"{prefix} {random.randint(900, 999)} {random.randint(100, 999)} {random.randint(1000, 9999)}"
+        else:
+            # Format: 09XX XXX XXXX
+            phone_number = f"{prefix}{random.randint(10, 99)} {random.randint(100, 999)} {random.randint(1000, 9999)}"
+        
+        prof_dict['phone'] = phone_number
+        professors.append(prof_dict)
+    
     return professors
 
 def get_professor_by_id(faculty_id):
@@ -337,47 +357,53 @@ def get_all_courses():
     courses = [dict(row) for row in rows]
     return courses
 
+def ensure_photos_directory_exists():
+    """Ensure the photos directory exists for faculty photos"""
+    photos_dir = "assets/photos"
+    if not os.path.exists(photos_dir):
+        os.makedirs(photos_dir, exist_ok=True)
+    return photos_dir
 
-def add_professor(first_name, last_name, email, phone, department_name, photo_url=None):
-    """Add a new professor to the database"""
+def add_professor(first_name, last_name, email, phone, department_name, specialty=None, photo_url=None):
+    """Add a new professor"""
     conn = sqlite3.connect('faculty_db.sqlite')
     cursor = conn.cursor()
     
     try:
-        # Get department ID
+        # Ensure photos directory exists
+        ensure_photos_directory_exists()
+        
+        # Get office_id from department name
         cursor.execute('SELECT office_id FROM faculty WHERE office_name = ?', (department_name,))
-        dept = cursor.fetchone()
-        if not dept:
-            conn.close()
-            return False, f"Department '{department_name}' does not exist"
+        office_row = cursor.fetchone()
         
-        office_id = dept[0]
+        if not office_row:
+            raise ValueError(f"Department '{department_name}' not found")
         
-        # Check if email already exists
-        cursor.execute('SELECT faculty_id FROM professors WHERE email = ?', (email,))
-        existing = cursor.fetchone()
-        if existing:
-            conn.close()
-            return False, f"Email '{email}' already exists"
+        office_id = office_row[0]
         
-        # For now, using subject_id field to store phone (database structure update would be better)
+        # Insert the new professor
         cursor.execute('''
         INSERT INTO professors (f_name, l_name, email, office_id, subject_id, photo_url)
         VALUES (?, ?, ?, ?, ?, ?)
-        ''', (first_name, last_name, email, office_id, phone, photo_url))
+        ''', (first_name, last_name, email, office_id, specialty, photo_url))
         
+        faculty_id = cursor.lastrowid
         conn.commit()
-        conn.close()
-        return True, "Professor added successfully"
+        
+        return faculty_id
+    
     except sqlite3.IntegrityError as e:
-        conn.close()
-        if 'UNIQUE constraint failed: professors.email' in str(e):
-            return False, f"Error: Email '{email}' already exists."
+        conn.rollback()
+        if "UNIQUE constraint failed: professors.email" in str(e):
+            raise ValueError(f"Email '{email}' is already in use by another professor")
         else:
-            return False, f"Database integrity error: {str(e)}"
+            raise ValueError(f"Database error: {str(e)}")
     except Exception as e:
+        conn.rollback()
+        raise e
+    finally:
         conn.close()
-        return False, f"An unexpected error occurred: {str(e)}"
 
 def get_all_departments():
     """Get all departments"""
@@ -527,37 +553,50 @@ def create_admin_user(username, password, full_name, email):
         conn.close()
         return False, f"Error: {str(e)}"
 
-def update_professor(faculty_id, first_name, last_name, email, phone, department_name, photo_url=None):
+def update_professor(faculty_id, first_name, last_name, email, phone, department_name, specialty=None, photo_url=None):
     """Update an existing professor"""
     conn = sqlite3.connect('faculty_db.sqlite')
     cursor = conn.cursor()
     
     try:
-        # Check if department exists
+        # Ensure photos directory exists
+        ensure_photos_directory_exists()
+        
+        # Get office_id from department name
         cursor.execute('SELECT office_id FROM faculty WHERE office_name = ?', (department_name,))
-        department = cursor.fetchone()
-        if not department:
-            conn.close()
-            return False, f"Department '{department_name}' does not exist"
+        office_row = cursor.fetchone()
         
-        department_id = department[0]
+        if not office_row:
+            raise ValueError(f"Department '{department_name}' not found")
         
-        # Using subject_id field to store phone number
+        office_id = office_row[0]
+        
+        # Check if faculty_id exists
+        cursor.execute('SELECT faculty_id FROM professors WHERE faculty_id = ?', (faculty_id,))
+        if not cursor.fetchone():
+            raise ValueError(f"Professor with ID {faculty_id} not found")
+        
+        # Update the professor
         cursor.execute('''
         UPDATE professors 
         SET f_name = ?, l_name = ?, email = ?, office_id = ?, subject_id = ?, photo_url = ?
         WHERE faculty_id = ?
-        ''', (first_name, last_name, email, department_id, phone, photo_url, faculty_id))
+        ''', (first_name, last_name, email, office_id, specialty, photo_url, faculty_id))
         
         conn.commit()
-        conn.close()
-        return True, "Professor updated successfully"
-    except sqlite3.Error as e:
-        conn.close()
-        return False, f"Database error: {str(e)}"
+        return True
+    
+    except sqlite3.IntegrityError as e:
+        conn.rollback()
+        if "UNIQUE constraint failed: professors.email" in str(e):
+            raise ValueError(f"Email '{email}' is already in use by another professor")
+        else:
+            raise ValueError(f"Database error: {str(e)}")
     except Exception as e:
+        conn.rollback()
+        raise e
+    finally:
         conn.close()
-        return False, f"An unexpected error occurred: {str(e)}"
 
 def delete_professor(faculty_id):
     """Delete a professor"""

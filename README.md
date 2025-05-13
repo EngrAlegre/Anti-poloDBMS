@@ -1,94 +1,71 @@
-# Faculty Finder
+# Faculty Finder Application
 
-A desktop application designed to help students easily find and connect with faculty members at the university. Built with PyQt5 and SQLite.
-
-![Faculty Finder]
+A desktop application to help students easily find faculty members at the university, view their details, and check their teaching schedules.
 
 ## Features
 
-- **Department Browsing**: Navigate through university departments
-- **Faculty Profiles**: View detailed information about professors including:
-  - Contact information
-  - Office location
-  - Department affiliation
-  - Academic specialties
-- **Teaching Schedules**: Check faculty teaching schedules and office hours
-- **Admin Interface**: Secure admin section for maintaining faculty data
+- Browse faculty members across departments
+- View faculty details including contact information and profile photos
+- Check faculty teaching schedules
+- Search for specific faculty members
+- Admin panel for managing faculty, departments, courses, and schedules
+- Complete schedule management system for adding and removing faculty schedules
 
-## Installation
+## Technology Stack
 
-### Prerequisites
+- **Python**: Core programming language
+- **PyQt5**: GUI framework
+- **SQLite**: Database engine
 
-- Python 3.6+
-- PyQt5
-- SQLite3
+## Installation and Setup
 
-### Setup
-
-1. Clone the repository:
-   ```
-   git clone https://github.com/EngrAlegre/Anti-poloDBMS.git
-   cd Anti-poloDBMS
-   ```
-
+1. Ensure you have Python 3.7 or higher installed
 2. Install required dependencies:
+   ```bash
+   pip install PyQt5 sqlite3
    ```
-   pip install PyQt5
-   ```
-
 3. Run the application:
-   ```
+   ```bash
    python main.py
    ```
 
-On first run, the application will automatically create a database with sample data.
+## Database Structure
 
-## Usage
+The application uses SQLite for data storage with the following tables:
+- `faculty`: Departments and office information
+- `professors`: Faculty member details
+- `courses`: Course information
+- `professor_sched`: Teaching schedules
+- `admin_users`: Admin authentication
 
-### Student View
+## Recent Updates
 
-1. **Browse Departments**: Click on the "Faculty" tab to see a list of all departments
-2. **View Department Details**: Click on a department to see all faculty members in that department
-3. **Faculty Profile**: Click on a faculty card to view their detailed profile
-4. **View Schedule**: On a faculty profile, click "View Schedule" to see teaching hours
+- Added complete schedule management with Add Schedule functionality
+- Improved UI with consistent yellow accent color (#FFDD00) across the application
+- Added faculty photo display functionality
+- Fixed indentation issues in Python files
+- Added comprehensive database documentation
+- Resolved ERD discrepancies
 
-### Admin View
+## Admin Access
 
-1. Click the "Admin" tab
-2. Log in with admin credentials (default: admin/password)
-3. Manage faculty, departments, courses, and schedules
-
-## Project Structure
-
-- `main.py`: Application entry point
-- `database.py`: Database operations
-- `ui/`: UI components
-  - `departments_list.py`: Department browsing interface
-  - `department_detail.py`: Department details with faculty listing
-  - `faculty_detail.py`: Faculty member details
-  - `schedule_view.py`: Faculty schedule display
-  - `admin_*.py`: Admin interfaces
-
-## Database Schema
-
-The application uses SQLite with the following key tables:
-- Professors
-- Departments
-- Courses
-- Schedules
-- Admin Users
+Default admin credentials:
+- Username: admin
+- Password: admin123
 
 ## Development
 
-This application was developed as part of the Database Management Systems course project using:
+To modify or extend the application:
 
-- PyQt5 for the user interface
-- SQLite for data storage
-- Object-oriented design principles
+1. Clone the repository
+2. Make changes to the relevant files:
+   - `main.py`: Application entry point and main window setup
+   - `database.py`: Database operations
+   - `ui/` directory: Individual UI components
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License.
 
 ## Contributors
 

@@ -62,6 +62,18 @@ class AdminLoginFrame(QWidget):
         cancel_btn = QPushButton("Cancel")
         cancel_btn.setFont(QFont("Arial", 12))
         cancel_btn.clicked.connect(lambda: controller.show_frame("departmentslistframe"))
+        cancel_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #333333;
+                color: white;
+                border-radius: 4px;
+                padding: 8px 15px;
+                min-width: 100px;
+            }
+            QPushButton:hover {
+                background-color: #555555;
+            }
+        """)
         button_layout.addWidget(cancel_btn)
         
         # Spacer
@@ -71,6 +83,20 @@ class AdminLoginFrame(QWidget):
         login_btn = QPushButton("Login")
         login_btn.setFont(QFont("Arial", 12))
         login_btn.clicked.connect(self.login)
+        login_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #FFDD00;
+                color: black;
+                border-radius: 4px;
+                padding: 8px 15px;
+                min-width: 100px;
+                font-weight: bold;
+                border: 2px solid #333333;
+            }
+            QPushButton:hover {
+                background-color: #FFE840;
+            }
+        """)
         button_layout.addWidget(login_btn)
         
         # Add button container to login layout

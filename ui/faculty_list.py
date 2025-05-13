@@ -18,9 +18,11 @@ class FacultyCard(QFrame):
                 background-color: #3D3D3D;
                 border-radius: 8px;
                 color: white;
+                border: 1px solid #555555;
             }
             QFrame:hover {
                 background-color: #4D4D4D;
+                border: 1px solid #FFDD00;
             }
         """)
         
@@ -61,23 +63,27 @@ class FacultyListFrame(QWidget):
         super().__init__(parent)
         self.controller = controller
         
-        # Set background color
-        self.setStyleSheet("background-color: #FFDD00;")
-        
         # Main layout
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(0, 0, 0, 0)
         
+        # Title area with yellow background
+        title_container = QFrame()
+        title_container.setStyleSheet("background-color: #FFDD00;")
+        title_layout = QVBoxLayout(title_container)
+        title_layout.setContentsMargins(20, 20, 20, 20)
+        
         # Title at the top
         title_label = QLabel("Faculty Members")
         title_label.setFont(QFont("Arial", 24, QFont.Bold))
-        title_label.setStyleSheet("color: black; background-color: #FFDD00;")
-        title_label.setContentsMargins(20, 20, 20, 20)
-        main_layout.addWidget(title_label)
+        title_label.setStyleSheet("color: black;")
+        title_layout.addWidget(title_label)
+        
+        main_layout.addWidget(title_container)
         
         # White content area
         content_area = QFrame()
-        content_area.setStyleSheet("background-color: white;")
+        content_area.setStyleSheet("background-color: #FCFCFC;")
         content_layout = QVBoxLayout(content_area)
         content_layout.setContentsMargins(20, 20, 20, 20)
         
@@ -89,7 +95,7 @@ class FacultyListFrame(QWidget):
         
         # Create widget to hold grid
         self.scroll_content = QWidget()
-        self.scroll_content.setStyleSheet("background-color: white;")
+        self.scroll_content.setStyleSheet("background-color: #FCFCFC;")
         
         # Grid layout for faculty cards
         self.grid_layout = QGridLayout(self.scroll_content)
@@ -133,7 +139,7 @@ class FacultyListFrame(QWidget):
         try:
             # Get all professors
             professors = get_all_professors()
-            
+        
             # Sort professors by name
             professors = sorted(professors, key=lambda p: f"{p['f_name']} {p['l_name']}")
             
@@ -179,7 +185,7 @@ class FacultyListFrame(QWidget):
         try:
             # Search professors
             professors = search_professors(search_term)
-            
+        
             # Create grid layout for search results
             row, col = 0, 0
             

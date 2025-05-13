@@ -7,19 +7,20 @@ from database import get_professors_by_department
 class FacultyCard(QFrame):
     def __init__(self, faculty_data, controller, parent=None):
         super().__init__(parent)
-        self.faculty_id = faculty_data[0]
+        self.faculty_id = faculty_data['faculty_id']
         self.controller = controller
         
         # Configure appearance
         self.setStyleSheet("""
             QFrame {
-                background-color: white;
-                border: 1px solid #CCCCCC;
-                border-radius: 5px;
+                background-color: #3D3D3D;
+                border: 1px solid #555555;
+                border-radius: 8px;
+                color: white;
             }
             QFrame:hover {
-                border: 1px solid #999999;
-                background-color: #F9F9F9;
+                border: 1px solid #FFDD00;
+                background-color: #4D4D4D;
             }
         """)
         
@@ -35,19 +36,49 @@ class FacultyCard(QFrame):
         profile_pic = QLabel()
         profile_pic.setFixedSize(60, 60)
         profile_pic.setStyleSheet("""
-            background-color: #DDDDDD;
+            background-color: #555555;
             border-radius: 30px;
-            border: 1px solid #CCCCCC;
+            border: 1px solid #777777;
+            color: white;
         """)
-        profile_pic.setText("👤")
-        profile_pic.setFont(QFont("Arial", 30))
+        
+        # Check if faculty has a photo
+        if 'photo_url' in faculty_data and faculty_data['photo_url']:
+            try:
+                pixmap = QPixmap(faculty_data['photo_url'])
+                if not pixmap.isNull():
+                    # Scale the pixmap to fit the label while maintaining aspect ratio
+                    pixmap = pixmap.scaled(60, 60, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+                    # Set the pixmap on the label
+                    profile_pic.setText("")
+                    profile_pic.setPixmap(pixmap)
+                    # Make the label circular by setting a stylesheet with border-radius
+                    profile_pic.setStyleSheet("""
+                        background-color: #555555;
+                        border-radius: 30px;
+                        border: 1px solid #777777;
+                    """)
+                else:
+                    # Fallback to default icon if pixmap is null
+                    profile_pic.setText("👤")
+                    profile_pic.setFont(QFont("Arial", 30))
+            except Exception as e:
+                print(f"Error loading profile image: {str(e)}")
+                profile_pic.setText("👤")
+                profile_pic.setFont(QFont("Arial", 30))
+        else:
+            # Default icon if no photo_url
+            profile_pic.setText("👤")
+            profile_pic.setFont(QFont("Arial", 30))
+        
         profile_pic.setAlignment(Qt.AlignCenter)
         
         # Faculty name (larger and more prominent)
-        name = f"{faculty_data[2]} {faculty_data[1]}"  # first_name last_name
+        name = f"{faculty_data['first_name']} {faculty_data['last_name']}"
         name_label = QLabel(name)
         name_label.setFont(QFont("Arial", 16, QFont.Bold))
         name_label.setAlignment(Qt.AlignCenter)
+        name_label.setStyleSheet("color: white;")
         name_label.setWordWrap(True)
         
         # Add profile picture and name to layout
@@ -55,9 +86,9 @@ class FacultyCard(QFrame):
         main_layout.addWidget(name_label, 0, Qt.AlignCenter)
         
         # Subject (smaller, below name)
-        if faculty_data[4]:  # subject_id
-            subject_label = QLabel(faculty_data[4])
-            subject_label.setStyleSheet("color: #555555;")
+        if 'subject_id' in faculty_data and faculty_data['subject_id']:
+            subject_label = QLabel(faculty_data['subject_id'])
+            subject_label.setStyleSheet("color: #CCCCCC;")
             subject_label.setAlignment(Qt.AlignCenter)
             main_layout.addWidget(subject_label, 0, Qt.AlignCenter)
         
@@ -77,28 +108,26 @@ class DepartmentDetailFrame(QWidget):
         self.current_department = None
         self.current_columns = 2  # Default column count
         
-        # Set background color
-        self.setStyleSheet("background-color: #FFDD00;")
-        
         # Main layout
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(0, 0, 0, 0)
         
-        # Title and back button area
-        title_area = QWidget()
+        # Title area with yellow background
+        title_area = QFrame()
         title_area.setStyleSheet("background-color: #FFDD00;")
         title_layout = QVBoxLayout(title_area)
-        title_layout.setContentsMargins(20, 20, 20, 0)
+        title_layout.setContentsMargins(20, 20, 20, 20)
         
         # Back button
         back_button = QPushButton("← Back to Departments")
         back_button.clicked.connect(lambda: controller.show_frame("departmentslistframe"))
         back_button.setStyleSheet("""
             QPushButton {
-                background-color: #FFDD00;
                 border: none;
                 text-align: left;
                 padding: 5px;
+                color: #333333;
+                font-weight: bold;
             }
             QPushButton:hover {
                 text-decoration: underline;
@@ -109,14 +138,14 @@ class DepartmentDetailFrame(QWidget):
         # Department title
         self.title_label = QLabel("Department Name")
         self.title_label.setFont(QFont("Arial", 24, QFont.Bold))
-        self.title_label.setStyleSheet("background-color: #FFDD00;")
+        self.title_label.setStyleSheet("color: black;")
         self.title_label.setWordWrap(True)
         title_layout.addWidget(self.title_label)
         
         # Faculty count subtitle
         self.subtitle_label = QLabel("0 Faculty Members")
         self.subtitle_label.setFont(QFont("Arial", 18))
-        self.subtitle_label.setStyleSheet("background-color: #FFDD00;")
+        self.subtitle_label.setStyleSheet("color: black;")
         title_layout.addWidget(self.subtitle_label)
         
         main_layout.addWidget(title_area)

@@ -18,9 +18,11 @@ class DepartmentCard(QFrame):
                 background-color: #333333;
                 border-radius: 8px;
                 color: white;
+                border: 1px solid #555555;
             }
             QFrame:hover {
                 background-color: #444444;
+                border: 1px solid #FFDD00;
             }
         """)
         
@@ -51,19 +53,23 @@ class DepartmentsListFrame(QWidget):
         super().__init__(parent)
         self.controller = controller
         
-        # Set background color
-        self.setStyleSheet("background-color: #FFDD00;")
-        
         # Main container
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(0, 0, 0, 0)
         
+        # Title area with yellow background
+        title_container = QFrame()
+        title_container.setStyleSheet("background-color: #FFDD00;")
+        title_layout = QVBoxLayout(title_container)
+        title_layout.setContentsMargins(20, 20, 20, 20)
+        
         # Title at the top
         title_label = QLabel("Departments")
         title_label.setFont(QFont("Arial", 24, QFont.Bold))
-        title_label.setStyleSheet("color: black; background-color: #FFDD00;")
-        title_label.setContentsMargins(20, 20, 20, 20)
-        main_layout.addWidget(title_label)
+        title_label.setStyleSheet("color: black;")
+        title_layout.addWidget(title_label)
+        
+        main_layout.addWidget(title_container)
         
         # White content area with subtle background
         content_area = QFrame()
@@ -135,7 +141,7 @@ class DepartmentsListFrame(QWidget):
             row, col = 0, 0
             
             for dept in departments:
-                department_name = dept[1]  # dept is a tuple (id, name)
+                department_name = dept['office_name']  # Now accessing the dictionary key
                 card = DepartmentCard(department_name)
                 card.clicked.connect(self.show_department_detail)
                 

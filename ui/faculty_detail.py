@@ -54,15 +54,19 @@ class FacultyDetailFrame(QWidget):
         # Header container
         header_container = QWidget()
         header_container.setStyleSheet("background-color: #FFDD00;")
-        header_layout = QVBoxLayout(header_container)
+        header_layout = QHBoxLayout(header_container)  # Changed to horizontal layout
         header_layout.setContentsMargins(20, 10, 20, 20)
+        
+        # Left side container for back button and name
+        left_container = QWidget()
+        left_layout = QVBoxLayout(left_container)
+        left_layout.setContentsMargins(0, 0, 0, 0)
         
         # Back button
         back_button = QPushButton("← Back to Department")
         back_button.clicked.connect(self.go_back_to_department)
         back_button.setStyleSheet("""
             QPushButton {
-                background-color: #FFDD00;
                 border: none;
                 text-align: left;
                 padding: 5px;
@@ -73,14 +77,39 @@ class FacultyDetailFrame(QWidget):
                 text-decoration: underline;
             }
         """)
-        header_layout.addWidget(back_button)
+        left_layout.addWidget(back_button)
         
         # Name label at the top
         self.name_label = QLabel("")
         self.name_label.setFont(QFont("Arial", 28, QFont.Bold))
         self.name_label.setStyleSheet("color: black;")
         self.name_label.setWordWrap(True)
-        header_layout.addWidget(self.name_label)
+        left_layout.addWidget(self.name_label)
+        
+        # Add left container to header layout
+        header_layout.addWidget(left_container, 4)  # Give more space to left container
+        
+        # Right side for profile photo
+        self.photo_container = QWidget()
+        self.photo_container.setFixedSize(100, 100)
+        photo_layout = QVBoxLayout(self.photo_container)
+        photo_layout.setContentsMargins(0, 0, 0, 0)
+        
+        # Profile photo label
+        self.profile_photo = QLabel()
+        self.profile_photo.setFixedSize(80, 80)
+        self.profile_photo.setStyleSheet("""
+            background-color: #555555;
+            border-radius: 40px;
+            border: 2px solid #FFFFFF;
+        """)
+        self.profile_photo.setAlignment(Qt.AlignCenter)
+        self.profile_photo.setText("👤")
+        self.profile_photo.setFont(QFont("Arial", 40))
+        photo_layout.addWidget(self.profile_photo, 0, Qt.AlignCenter)
+        
+        # Add photo container to header layout
+        header_layout.addWidget(self.photo_container, 1)
         
         # Add header to main layout
         main_layout.addWidget(header_container)
@@ -247,46 +276,96 @@ class FacultyDetailFrame(QWidget):
         try:
             # Get professor details from database
             professor = get_professor_by_id(faculty_id)
-            
-            if not professor:
-                raise Exception("Professor not found!")
-            
-            # Update header with professor name
-            full_name = f"{professor['f_name']} {professor['l_name']}"
-            self.name_label.setText(full_name)
-            
-            # Update faculty information
-            self.faculty_value.setText(professor["office_name"])
-            
-            # Update location
-            location = f"Building {professor['building_num']}, Room {professor['room_num']}"
-            self.location_value.setText(location)
-            
-            # Update email
-            self.email_value.setText(professor["email"])
-            
-            # Update subject
-            self.subject_value.setText(professor["subject_id"])
-            
+        
+            if professor:
+                # Set professor name
+                name = f"{professor['first_name']} {professor['last_name']}"
+                self.name_label.setText(name)
+                
+                # Set department
+                self.faculty_value.setText(professor['department_name'] if professor['department_name'] else "N/A")
+                
+                # Set location
+                building = professor['building_num'] if professor['building_num'] else "N/A"
+                room = professor['room_num'] if professor['room_num'] else "N/A"
+                location = f"Building {building}, Room {room}" if building != "N/A" else "N/A"
+                self.location_value.setText(location)
+                
+                # Set email
+                self.email_value.setText(professor['email'] if professor['email'] else "N/A")
+                
+                # Set specialty (subject_id)
+                self.subject_value.setText(professor['subject_id'] if professor['subject_id'] else "N/A")
+                
+                # Handle profile photo if available
+                if 'photo_url' in professor and professor['photo_url']:
+                    try:
+                        pixmap = QPixmap(professor['photo_url'])
+                        if not pixmap.isNull():
+                            # Scale the pixmap to fit the label while maintaining aspect ratio
+                            pixmap = pixmap.scaled(80, 80, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+                            # Set the pixmap on the label
+                            self.profile_photo.setText("")
+                            self.profile_photo.setPixmap(pixmap)
+                            # Make the label circular by setting a stylesheet with border-radius
+                            self.profile_photo.setStyleSheet("""
+                                background-color: #555555;
+                                border-radius: 40px;
+                                border: 2px solid #FFFFFF;
+                            """)
+                        else:
+                            # Fallback to default icon if pixmap is null
+                            self.profile_photo.setText("👤")
+                            self.profile_photo.setFont(QFont("Arial", 40))
+                    except Exception as e:
+                        print(f"Error loading profile image: {str(e)}")
+                        self.profile_photo.setText("👤")
+                        self.profile_photo.setFont(QFont("Arial", 40))
+                else:
+                    # Default icon if no photo_url
+                    self.profile_photo.setText("👤")
+                    self.profile_photo.setFont(QFont("Arial", 40))
+            else:
+                # Handle case where professor is not found
+                self.name_label.setText("Faculty not found")
+                self.faculty_value.setText("N/A")
+                self.location_value.setText("N/A")
+                self.email_value.setText("N/A")
+                self.subject_value.setText("N/A")
+                self.schedule_btn.setEnabled(False)
+                
+                # Reset profile photo
+                self.profile_photo.setText("👤")
+                self.profile_photo.setFont(QFont("Arial", 40))
+        
         except Exception as e:
-            self.name_label.setText(f"Error: {str(e)}")
+            print(f"Error loading faculty: {str(e)}")
+            self.name_label.setText("Error loading faculty")
+            self.faculty_value.setText("N/A")
+            self.location_value.setText("N/A")
+            self.email_value.setText("N/A")
+            self.subject_value.setText("N/A")
+            self.schedule_btn.setEnabled(False)
+            
+            # Reset profile photo
+            self.profile_photo.setText("👤")
+            self.profile_photo.setFont(QFont("Arial", 40))
     
     def view_schedule(self):
         """View faculty schedule"""
         if self.current_faculty_id:
             self.controller.show_schedule(self.current_faculty_id)
-            
+    
     def go_back_to_department(self):
-        """Go back to the department that this faculty belongs to"""
+        """Go back to department view"""
         if self.current_faculty_id:
-            # Get professor details to find their department
+            # Get the department for this faculty
             professor = get_professor_by_id(self.current_faculty_id)
-            if professor and professor["office_name"]:
-                # Show the department details for this professor's department
-                self.controller.show_department_detail(professor["office_name"])
+            if professor and professor["department_name"]:
+                self.controller.show_department_detail(professor["department_name"])
             else:
-                # Fallback to departments list if no department found
+                # If no department, go back to departments list
                 self.controller.show_frame("departmentslistframe")
         else:
-            # Fallback to departments list if no faculty ID
+            # If no faculty selected, go back to departments list
             self.controller.show_frame("departmentslistframe")

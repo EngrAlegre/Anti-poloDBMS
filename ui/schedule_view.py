@@ -97,7 +97,7 @@ class ScheduleViewFrame(QWidget):
                 raise Exception("Professor not found!")
             
             # Update name label
-            full_name = f"{professor['f_name']} {professor['l_name']} - Schedule"
+            full_name = f"{professor['first_name']} {professor['last_name']} - Schedule"
             self.name_label.setText(full_name)
             
             # Clear existing schedule items

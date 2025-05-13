@@ -17,7 +17,8 @@ from database import (
     filter_professors_by_course,
     get_all_faculties,
     get_all_courses,
-    ensure_admin_table_exists
+    ensure_admin_table_exists,
+    ensure_photo_url_column
 )
 from ui.faculty_list import FacultyListFrame
 from ui.faculty_detail import FacultyDetailFrame
@@ -37,27 +38,32 @@ class AboutFrame(QWidget):
         super().__init__(parent)
         self.controller = controller
         
-        # Set background color
-        self.setStyleSheet("background-color: #FFDD00;")
-        
         # Create main container with vertical layout
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(0, 0, 0, 0)
         
+        # Header area with yellow background
+        header_container = QFrame()
+        header_container.setStyleSheet("background-color: #FFDD00;")
+        header_layout = QVBoxLayout(header_container)
+        header_layout.setContentsMargins(20, 20, 20, 20)
+        
         # Title at the top
         title_label = QLabel("About this app...")
         title_label.setFont(QFont("Arial", 24, QFont.Bold))
-        title_label.setStyleSheet("background-color: #FFDD00;")
-        main_layout.addWidget(title_label)
-        main_layout.setContentsMargins(20, 20, 20, 20)
+        title_label.setStyleSheet("color: black;")
+        header_layout.addWidget(title_label)
         
-        # White content area
+        main_layout.addWidget(header_container)
+        
+        # Content area
         content_area = QFrame()
         content_area.setStyleSheet("""
             background-color: #FCFCFC;
         """)
         content_area.setFrameShape(QFrame.StyledPanel)
         content_layout = QVBoxLayout(content_area)
+        content_layout.setContentsMargins(30, 30, 30, 30)
         
         # App description
         description = """
@@ -75,12 +81,14 @@ This application was developed as part of the Database Management Systems course
         desc_label = QLabel(description)
         desc_label.setFont(QFont("Arial", 12))
         desc_label.setWordWrap(True)
+        desc_label.setStyleSheet("color: #333333;")
         content_layout.addWidget(desc_label)
         
         # Version information
         version_label = QLabel("Version 1.0")
         version_label.setFont(QFont("Arial", 14))
         version_label.setAlignment(Qt.AlignRight)
+        version_label.setStyleSheet("color: #333333;")
         content_layout.addWidget(version_label)
         
         main_layout.addWidget(content_area)
@@ -103,7 +111,7 @@ class NavButton(QWidget):
         
         # Store original and active colors
         self.default_bg = "#212121"
-        self.active_bg = "#3D3D3D"
+        self.active_bg = "#FFDD00"  # Changed to yellow
         self.hover_bg = "#2D2D2D"
         self.is_active = False
     
@@ -121,7 +129,7 @@ class NavButton(QWidget):
     def setActive(self, active):
         self.is_active = active
         if active:
-            self.label.setStyleSheet(f"color: white; background-color: {self.active_bg}; padding: 10px 15px;")
+            self.label.setStyleSheet(f"color: black; background-color: {self.active_bg}; padding: 10px 15px;")
         else:
             self.label.setStyleSheet(f"color: white; background-color: {self.default_bg}; padding: 10px 15px;")
 
@@ -145,8 +153,9 @@ class FacultyManagementSystem(QMainWindow):
             create_database()
             populate_sample_data()
         
-        # Always ensure admin table exists
+        # Always ensure admin table exists and photo_url column exists
         ensure_admin_table_exists()
+        ensure_photo_url_column()
         
         # Create central widget
         central_widget = QWidget()
@@ -180,16 +189,15 @@ class FacultyManagementSystem(QMainWindow):
         faculty_label.setAlignment(Qt.AlignLeft)
         logo_layout.addWidget(faculty_label)
         
-        # Add Finder in yellow background box
+        # Add Finder in white text (no background box)
         finder_frame = QFrame()
-        finder_frame.setStyleSheet("background-color: #FFDD00;")
         finder_frame.setFixedWidth(190)  # Set fixed width to prevent cutoff
         finder_layout = QHBoxLayout(finder_frame)  # Change to horizontal layout
         finder_layout.setContentsMargins(10, 5, 10, 5)  # Adjust padding for better fit
         
         finder_label = QLabel("Finder")
         finder_label.setFont(QFont("Arial", 32, QFont.Bold))  # Reduced from 36 to 32
-        finder_label.setStyleSheet("color: black; background-color: #FFDD00;")
+        finder_label.setStyleSheet("color: white;")
         finder_label.setAlignment(Qt.AlignCenter)  # Center align the text
         finder_layout.addWidget(finder_label)
         
@@ -222,9 +230,8 @@ class FacultyManagementSystem(QMainWindow):
         spacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
         nav_layout.addItem(spacer)
         
-        # Content area (yellow background)
+        # Content area (default background)
         self.content_widget = QFrame()
-        self.content_widget.setStyleSheet("background-color: #FFDD00;")
         
         # Add navigation frame and content frame to main layout
         main_layout.addWidget(self.nav_frame)

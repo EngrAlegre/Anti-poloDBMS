@@ -56,6 +56,20 @@ class AdminDashboardFrame(QWidget):
         # Logout button
         logout_btn = QPushButton("Logout")
         logout_btn.clicked.connect(self.logout)
+        logout_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #333333;
+                color: white;
+                border-radius: 4px;
+                padding: 8px 15px;
+                min-width: 100px;
+                border: 2px solid #FFDD00;
+            }
+            QPushButton:hover {
+                background-color: #555555;
+                border: 2px solid white;
+            }
+        """)
         top_layout.addWidget(logout_btn, 0, Qt.AlignRight)
         
         main_layout.addWidget(top_bar)
@@ -113,24 +127,76 @@ class AdminDashboardFrame(QWidget):
         faculty_btn.setFont(QFont("Arial", 12))
         faculty_btn.setMinimumHeight(60)
         faculty_btn.clicked.connect(self.show_faculty_management)
+        faculty_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #333333;
+                color: white;
+                border-radius: 8px;
+                padding: 10px;
+                border: 2px solid #FFDD00;
+            }
+            QPushButton:hover {
+                background-color: #555555;
+                border: 2px solid white;
+            }
+        """)
         buttons_layout.addWidget(faculty_btn, 0, 0)
         
         department_btn = QPushButton("Manage Departments")
         department_btn.setFont(QFont("Arial", 12))
         department_btn.setMinimumHeight(60)
         department_btn.clicked.connect(self.show_department_management)
+        department_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #333333;
+                color: white;
+                border-radius: 8px;
+                padding: 10px;
+                border: 2px solid #FFDD00;
+            }
+            QPushButton:hover {
+                background-color: #555555;
+                border: 2px solid white;
+            }
+        """)
         buttons_layout.addWidget(department_btn, 0, 1)
         
         course_btn = QPushButton("Manage Courses")
         course_btn.setFont(QFont("Arial", 12))
         course_btn.setMinimumHeight(60)
         course_btn.clicked.connect(self.show_course_management)
+        course_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #333333;
+                color: white;
+                border-radius: 8px;
+                padding: 10px;
+                border: 2px solid #FFDD00;
+            }
+            QPushButton:hover {
+                background-color: #555555;
+                border: 2px solid white;
+            }
+        """)
         buttons_layout.addWidget(course_btn, 1, 0)
         
         schedule_btn = QPushButton("Manage Schedules")
         schedule_btn.setFont(QFont("Arial", 12))
         schedule_btn.setMinimumHeight(60)
         schedule_btn.clicked.connect(self.show_schedule_management)
+        schedule_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #333333;
+                color: white;
+                border-radius: 8px;
+                padding: 10px;
+                border: 2px solid #FFDD00;
+            }
+            QPushButton:hover {
+                background-color: #555555;
+                border: 2px solid white;
+            }
+        """)
         buttons_layout.addWidget(schedule_btn, 1, 1)
         
         # Add buttons container to sections layout

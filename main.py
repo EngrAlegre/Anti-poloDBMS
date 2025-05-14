@@ -393,6 +393,10 @@ class FacultyManagementSystem(QMainWindow):
         # Return to main view
         self.show_frame("departmentslistframe")
     
+    def logout(self):
+        """Logs out the admin user by calling admin_logged_out"""
+        self.admin_logged_out()
+    
     def show_faculty_management(self):
         """Show faculty management screen"""
         self.show_frame("facultymanagementframe")
